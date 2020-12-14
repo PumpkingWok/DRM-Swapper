@@ -11,7 +11,6 @@ contract('Contract -- propose a swap', function(accounts) {
         await token0.mintBatch(accounts[1], [4,5,6,7], [10,10,10,10], []);
         await token0.setApprovalForAll(factory.address, true, {from: accounts[0]});
         await token0.setApprovalForAll(factory.address, true, {from: accounts[1]});
-
     });
 
     it('Propose a swap with only one tokenId', async function() {

@@ -3,6 +3,7 @@ pragma solidity ^0.7.4;
 pragma experimental ABIEncoderV2;
 
 import "@openzeppelin/contracts/token/ERC1155/IERC1155.sol";
+import "@openzeppelin/contracts/introspection/IERC165.sol";
 
 
 contract DRMSwapper {
@@ -19,6 +20,8 @@ contract DRMSwapper {
 
     mapping (uint256 => Swap) swaps;
     uint256 swapId;
+
+    bytes4 private constant _INTERFACE_ID_ERC1155 = 0xd9b67a26;
     
     event ProposeSwap(
         address indexed creator, 
@@ -53,7 +56,10 @@ contract DRMSwapper {
     }
     
     constructor(address _address) {
-        NFTContract = IERC1155(_address); 
+        if (!IERC165(_address).supportsInterface(_INTERFACE_ID_ERC1155)) {
+            revert();
+        }
+        NFTContract = IERC1155(_address);
     }
 
     /**
