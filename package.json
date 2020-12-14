@@ -1,0 +1,25 @@
+{
+  "name": "drm-swapper",
+  "version": "1.0.0",
+  "description": "Tool for swapping DRM cards",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/PumpkingWok/DRM-Swapper.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/PumpkingWok/DRM-Swapper/issues"
+  },
+  "homepage": "https://github.com/PumpkingWok/DRM-Swapper#readme",
+  "dependencies": {
+    "@openzeppelin/contracts": "^3.2.0",
+    "@truffle/hdwallet-provider": "^1.2.0",
+    "truffle": "^5.1.53",
+    "truffle-assertions": "^0.9.2"
+  }
+}
