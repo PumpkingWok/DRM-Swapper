@@ -2,11 +2,12 @@
 Tool for swapping DRM cards
 
 ## Install dependencies
-yarn
+`yarn`
 
 ## Compile contracts
-yarn compile
+`yarn compile`
 
 ## Test contract
-If you want test it in local environment you need ganache-cli
-yarn test (with ganache-cli installed)
+If you want test it in local environment you have to install ganache-cli
+
+`yarn test` (with ganache-cli installed)
