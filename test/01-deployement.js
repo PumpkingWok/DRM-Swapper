@@ -11,5 +11,6 @@ contract('Contract -- deployement of DRMSwapper contract', function(accounts) {
             DRMSwapper.new(token0.address),
             "Token ERC1155 Compliant"
         );
+        await truffleAssert.fails(DRMSwapper.new(accounts[0]), truffleAssert.ErrorType.REVERT)
     });
 });

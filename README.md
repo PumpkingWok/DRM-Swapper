@@ -5,7 +5,8 @@ Tool for swapping DRM cards
 yarn
 
 ## Compile contracts
-truffle compile
+yarn compile
 
 ## Test contract
-truffle test
+If you want test it in local environment you need ganache-cli
+yarn test (with ganache-cli installed)

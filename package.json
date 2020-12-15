@@ -4,7 +4,8 @@
   "description": "Tool for swapping DRM cards",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "compile": "truffle compile",
+    "test": "truffle test"
   },
   "repository": {
     "type": "git",
