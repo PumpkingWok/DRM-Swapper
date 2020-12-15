@@ -56,4 +56,24 @@ contract('Contract -- propose a swap', function(accounts) {
             return true;
         });
     });
+
+    it('Propose a swap in batch', async function() {
+        const fromTokensId = [0, 2, 3]
+        const fromAmounts = [2, 2, 2]
+        const toTokensId = [4, 6, 7]
+        const toAmounts = [3, 3, 3]
+        const tx = await factory.proposeSwap(fromTokensId, fromAmounts, toTokensId, toAmounts);
+        truffleAssert.eventEmitted(tx, 'ProposeSwap', (ev) => {
+            return true;
+        });
+    });
+
+    it('Accept a swap in batch', async function() {
+        const tx = await factory.acceptSwap(3, {from: accounts[1]})
+        truffleAssert.eventEmitted(tx, 'AcceptSwap', (ev) => {
+            return true;
+        });
+        // swap already accepted
+        await truffleAssert.fails(factory.acceptSwap(3, {from: accounts[1]}), truffleAssert.ErrorType.REVERT)
+    });
 });

@@ -16,6 +16,7 @@ contract DRMSwapper {
         uint256[] toTokensId;
         uint256[] toAmounts;
         address reservedFor;
+        bool accepted;
     }
 
     mapping (uint256 => Swap) swaps;
@@ -50,8 +51,13 @@ contract DRMSwapper {
     modifier checkReservedFor(uint256 _swapId) {
         address reservedFor = swaps[_swapId].reservedFor;
         if (reservedFor != address(0)) {
-            require(reservedFor == msg.sender);
+            require(reservedFor == msg.sender, 'Swap already accepted');
         }
+        _;
+    }
+
+    modifier ifNotAcceptedYet(uint256 _swapId) {
+        require(!swaps[_swapId].accepted);
         _;
     }
     
@@ -107,7 +113,7 @@ contract DRMSwapper {
             require(fromTokensId.length == fromAmounts.length);
             require(toTokensId.length == toAmounts.length);
             
-            Swap memory swap = Swap(msg.sender, fromTokensId, fromAmounts, toTokensId, toAmounts, reservedFor);
+            Swap memory swap = Swap(msg.sender, fromTokensId, fromAmounts, toTokensId, toAmounts, reservedFor, false);
             swapId = swapId + 1;
             swaps[swapId] = swap;
             emit ProposeSwap(msg.sender, fromTokensId, fromAmounts, toTokensId, toAmounts, reservedFor, swapId);
@@ -138,7 +144,7 @@ contract DRMSwapper {
     /**
      * @notice accept swap in batch proposed  
      */
-    function acceptSwap(uint256 _swapId) external checkReservedFor(_swapId) {
+    function acceptSwap(uint256 _swapId) external checkReservedFor(_swapId) ifNotAcceptedYet(_swapId) {
         if (swaps[_swapId].toTokensId.length == 1) {
             NFTContract.safeTransferFrom(msg.sender, swaps[_swapId].creator, swaps[_swapId].toTokensId[0], swaps[_swapId].toAmounts[0], "");
         } else {
@@ -149,6 +155,7 @@ contract DRMSwapper {
         } else {
             NFTContract.safeBatchTransferFrom(swaps[_swapId].creator, msg.sender, swaps[_swapId].fromTokensId, swaps[_swapId].toAmounts, "");
         }
+        swaps[_swapId].accepted = true;
         emit AcceptSwap(swaps[_swapId].creator, msg.sender, _swapId);
         //delete swaps[_swapId];
     }
