@@ -104,5 +104,8 @@ module.exports = {
        evmVersion: "constantinople"
       }
     }
-  }
+  },
+  plugins : [
+    'truffle-contract-size'
+  ]
 };

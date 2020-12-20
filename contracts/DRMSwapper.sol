@@ -1,4 +1,4 @@
-//SPDX-License-Identifier:Unlicensed
+//SPDX-License-Identifier:GPL-3.0-or-later
 pragma solidity ^0.7.4;
 pragma experimental ABIEncoderV2;
 
@@ -16,7 +16,6 @@ contract DRMSwapper {
         uint256[] toTokensId;
         uint256[] toAmounts;
         address reservedFor;
-        bool accepted;
     }
 
     mapping (uint256 => Swap) swaps;
@@ -47,6 +46,7 @@ contract DRMSwapper {
 
     event MakeSwapPublic(address indexed creator, uint256 swapId);
     event MakeSwapReserved(address indexed creator, address indexed reserveFor, uint256 swapId);
+    event RecycleSwap(address indexed newProposer, uint256 swapId);
 
     modifier checkReservedFor(uint256 _swapId) {
         address reservedFor = swaps[_swapId].reservedFor;
@@ -56,8 +56,8 @@ contract DRMSwapper {
         _;
     }
 
-    modifier ifNotAcceptedYet(uint256 _swapId) {
-        require(!swaps[_swapId].accepted);
+    modifier ifHasCreator(uint256 _swapId) {
+        require(swaps[_swapId].creator != address(0));
         _;
     }
     
@@ -113,7 +113,7 @@ contract DRMSwapper {
             require(fromTokensId.length == fromAmounts.length);
             require(toTokensId.length == toAmounts.length);
             
-            Swap memory swap = Swap(msg.sender, fromTokensId, fromAmounts, toTokensId, toAmounts, reservedFor, false);
+            Swap memory swap = Swap(msg.sender, fromTokensId, fromAmounts, toTokensId, toAmounts, reservedFor);
             swapId = swapId + 1;
             swaps[swapId] = swap;
             emit ProposeSwap(msg.sender, fromTokensId, fromAmounts, toTokensId, toAmounts, reservedFor, swapId);
@@ -124,7 +124,7 @@ contract DRMSwapper {
      */
     function deleteSwap(uint256 _swapId) external {
         require(swaps[_swapId].creator == msg.sender, "Only swap creator can delete it");
-        delete swaps[_swapId];
+        swaps[_swapId].creator = address(0);
         emit DeleteSwap(msg.sender, _swapId);
     }
 
@@ -144,7 +144,7 @@ contract DRMSwapper {
     /**
      * @notice accept swap in batch proposed  
      */
-    function acceptSwap(uint256 _swapId) external checkReservedFor(_swapId) ifNotAcceptedYet(_swapId) {
+    function acceptSwap(uint256 _swapId) external checkReservedFor(_swapId) ifHasCreator(_swapId) {
         if (swaps[_swapId].toTokensId.length == 1) {
             NFTContract.safeTransferFrom(msg.sender, swaps[_swapId].creator, swaps[_swapId].toTokensId[0], swaps[_swapId].toAmounts[0], "");
         } else {
@@ -155,9 +155,23 @@ contract DRMSwapper {
         } else {
             NFTContract.safeBatchTransferFrom(swaps[_swapId].creator, msg.sender, swaps[_swapId].fromTokensId, swaps[_swapId].toAmounts, "");
         }
-        swaps[_swapId].accepted = true;
+        swaps[_swapId].creator = address(0);
         emit AcceptSwap(swaps[_swapId].creator, msg.sender, _swapId);
-        //delete swaps[_swapId];
+    }
+
+    function recycleSwap(uint256 _swapId) external {
+        _recycleSwap(_swapId, address(0 ));
+    }
+
+    function recycleSwapAndReservedFor(uint256 _swapId, address _reservedFor) external {
+        _recycleSwap(_swapId, _reservedFor);
+    }
+
+    function _recycleSwap(uint256 _swapId, address _reservedFor) internal {
+        require(swaps[_swapId].creator == address(0));
+        swaps[_swapId].creator = msg.sender;
+        swaps[_swapId].reservedFor = _reservedFor;
+        emit RecycleSwap(msg.sender, _swapId);
     }
     
     /**
